@@ -12,7 +12,7 @@ module "app_resource_naming_va" {
 
 module "mgmt-vnet" {
   source              = "../../../../modules/azurerm-vnet"
-  vnet_name           = "${module.mgmt_resource_naming_va.virtual_network}-mgmt"
+  vnet_name           = "${module.mgmt_resource_naming_va.virtual_network.name}-mgmt"
   resource_group_name = data.terraform_remote_state.setup.outputs.network_rg_name
   address_space       = ["${var.mgmt_network_cidr}"]
   subnets             = {
