@@ -1,133 +1,90 @@
-# ACE-Azure-VNet
-
-Repository for Azure VNet Module ACE code. This repo should be used for Azure project to deploy VNets and subnets.
+# MSCI Azure VNet
 
 ## Description
 
-- Terraform Version: 1.1.7
-- Cloud(s) supported: Azure Government & Commercial
-- Product Version/License: N/A
-- FedRAMP Compliance Support: FR Mod/High
-- DoD Compliance Support: {IL4/5}
-- Misc Framework Support: N/A
-- Launchpad validated version: N/A
+This Terraform module deploys a Virtual Network in Azure with a subnet or a set of subnets passed in as input parameters.
 
-## Setup and usage
+## Resource List
 
-1. Clone repo to your Azure project directory, path should be 
-   1. Module path should be `terraform/modules/azurerm-vnet`
-   2. Terraform build path should be `terraform/prod/us-va/mgmt/mgmt-network`
-2. Regional vars should be modified to match the proper subnet/vnet values for your build. Resource/vnet/subnet names should also be modified in the code for mgmt.tf
-3. The subnets are calculated via terraform `cidrsubnet()` function. This link shows how to use the function
-   1. https://www.terraform.io/language/functions/cidrsubnet
-   2. Here are some examples too:
-      1. ```
-         > cidrsubnet("10.0.0.0/16", 8,0)
-         "10.0.0.0/24"
-         > cidrsubnet("10.0.0.0/16", 8,1)
-         "10.0.1.0/24"
-         > cidrsubnet("10.0.0.0/16", 8,2)
-         "10.0.2.0/24"
-         > cidrsubnet("10.0.0.0/16", 8,3)
-         "10.0.3.0/24"
-         > cidrsubnet("10.0.0.0/16", 4,8)
-         "10.0.128.0/20"
-         > cidrsubnet("10.254.0.0/16", 10,1020)
-         "10.254.255.0/26"
-         > cidrsubnet("10.254.0.0/16", 10,1015)
-         "10.254.253.192/26"
-         > cidrsubnet("10.254.0.0/16", 10,1016)
-         "10.254.254.0/26"
-         ```
-4. You must also have the `terraform/modules/coalfire-diagnostic` module cloned as the azurerm-vnet module utilizes the coalfire-diagnostic module in `azurerm-vnet/main.tf` line 67 to create diag log backends.          
-      
+- Vnet
+- Subnets
+- NSG and route table associations
+- Monitor diagnostic setting
 
-### Code Location
-
-Code should be stored in:
-   1. Module path should be `terraform/modules/azurerm-vnet`
-   2. Terraform build path should be `terraform/prod/us-va/mgmt/mgmt-network`
-
-### Code updates
-
-1. Ensure that your subnet/vnet vars are in regional-vars.tf
-2. Ensure your Resource Group names are accurate
-3. Ensure the proper subnet_service_endpoints are being allowed per subnet
-
-## Dependencies
-
-- Security Core
-- Region Setup
-
-## Code updates
-
-`mgmt.tf`
-
-- Update the name and number of subnets as needed in the `subnet_addrs` module.
-- If you need to add or remove Service Endpoints, do so in the `subnet_service_endpoints` block. See <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet> for Service Endpoint options.
-- For the initial deployment, ensure the `dns_servers` line is commented out until the Domain controllers are online. Once the DC's are online uncomment and rerun an `apply`.
-
-`tstate.tf` Update to the appropriate version and storage accounts, see sample
-
-```hcl
-terraform {
-  required_version = ">= 1.1.7"
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 2.91.0"
-    }
-  }
-  backend "azurerm" {
-    resource_group_name  = "v1-prod-va-mp-core-rg"
-    storage_account_name = "v1prodvampsatfstate"
-    container_name       = "vav1tfstatecontainer"
-    environment          = "usgovernment"
-    key                  = "va-mgmt-network.tfstate"
-  }
-}
-```
-
-## Deployment steps
-
-Change directory to the `mgmt/mgmt-network` folder in the primary region
-
-Run `terraform init` to initialize modules and remote state.
-
-Run `terraform plan` and evaluate the plan is expected.
-
-Run `terraform apply` to deploy.
-
-Update the `remote-data.tf` file to add the region setup state key
-
-Rerun `terraform apply` to update all changes
-
-## Created Resources
-
-| Resource | Description |
-|------|-------------|
-| Virtual Network | |
-| Subnet | Public /24 network |
-| Subnet | IAM /24 network |
-| Subnet | CICD /24 network |
-| Subnet | SecOps /24 network |
-| Subnet | SIEM /24 network |
-| Subnet | Monitor /24 network |
-| Subnet | Bastion /24 network |
-
-## Next steps
-
-Application VNet (terraform/prod/{region}/mgmt/mgmt-network)
-
-### Inputs
+## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
+| name | The virtual network name | string | N/A | yes |
+| resource_group_name | The name of the resource group in which to create the resource in | string | N/A | yes |
+| location | The Azure location/region to create resources in | string | N/A | yes |
+| address_space | The address space that is used by the virtual network | string | N/A | yes |
+| subnets | List of maps with Subnet names and their configuration | [{subnet_name=string,address_prefix=string,nsg_id=string,subnet_service_endpoints=optional(list(string)),subnet_delegations=optional(map(any)),private_endpoint_network_policies_enabled=optional(bool),private_link_service_network_policies_enabled=optional(bool),route_tables_id=optional(string)}] | N/A | yes |
+| tags | The tags to associate with your network and subnets | map(string) | N/A | yes |
+| diag_log_analytics_id | ID of the Log Analytics Workspace diagnostic logs should be sent to | string | N/A | yes |
+| dns_servers | The DNS servers to be used with VNet | list(string) | [] | no |
+| private_dns_zone_ids | List of Private DNS Zone IDs to link with the vnet | list(string) | [] | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| usgv_mgmt_vnet_id | The id of the management vnet |
-| usgv_mgmt_vnet_name | The name of the management vnet |
-| usgv_mgmt_vnet_subnet_ids | The ids of subnets created inside the new vnet |
+| id | The ID of the VNet |
+| name | The Name of the VNet |
+| resource_group_name | The Resource Group Name of the VNet |
+| address_space | The address space of the VNet | 
+| subnet_ids | Map with the IDs of the subnets created inside the VNet |
+| addresses | Map with the cidr of subnets created inside the VNet |
+
+## Product Limitations
+
+- Network policies, like network security groups (NSG), are not supported for Private Link Endpoints or Private Link Services. In order to deploy a Private Link Endpoint on a given subnet, you must set the `private_endpoint_network_policies_enabled` attribute to `false`.
+- In order to deploy a Private Link Service on a given subnet, you must set the `private_link_service_network_policies_enabled` attribute to `false`.
+
+## Usage
+This module can be called as outlined below. 
+- Create a `local` folder under `terraform/azure`.
+- Create a `main.tf` file in the `local` folder. 
+- Copy the code below into `main.tf`.
+- From the `terraform/azure/local` directory run `terraform init`.
+- Run `terraform plan` to review the resources being created.
+- If everything looks correct in the plan output, run `terraform apply`.
+
+
+```hcl
+provider "azurerm" {
+  features {}
+}
+
+module "vnet" {
+  source = "../modules/msci-azure-vnet"
+
+  name                  = "mgmt-demo-us-vnet"
+  resource_group_name   = "mgmt-demo-us-rg"
+  location              = "eastus"
+  diag_log_analytics_id = "/subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.OperationalInsights/workspaces/<log_analytics_workspace_name>"
+  address_space         = ["10.0.0.0/16"]
+
+  subnets = [
+    {
+      subnet_name    = "mgmt-demo-us-common-sn"
+      address_prefix = "10.1.0.0/24"
+      nsg_id         = "/subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Network/networkSecurityGroups/<nsg_name>"
+    },
+    {
+      subnet_name    = "mgmt-demo-us-private_link-sn"
+      address_prefix = "10.2.0.0/24"
+      subnet_delegations = {
+        "Microsoft.DBforPostgreSQL/flexibleServers" = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+      }
+      private_endpoint_network_policies_enabled = false
+      nsg_id                                    = "/subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Network/networkSecurityGroups/<nsg_name>"
+    }
+  ]
+
+  tags = {
+    Plane       = "Core"
+    Environment = "dev"
+  }
+}
+```
