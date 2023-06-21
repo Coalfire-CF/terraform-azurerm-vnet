@@ -54,59 +54,80 @@ Code should be stored in:
 2. Ensure your Resource Group names are accurate
 3. Ensure the proper subnet_service_endpoints are being allowed per subnet
 
-## Issues
+## Dependencies
 
-Bug fixes and enhancements are managed, tracked, and discussed through the GitHub issues on this repository.
+- Security Core
+- Region Setup
 
-Issues should be flagged appropriately.
+## Code updates
 
-- Bug
-- Enhancement
-- Documentation
-- Code
+`mgmt.tf`
 
-### Bugs
+- Update the name and number of subnets as needed in the `subnet_addrs` module.
+- If you need to add or remove Service Endpoints, do so in the `subnet_service_endpoints` block. See <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet> for Service Endpoint options.
+- For the initial deployment, ensure the `dns_servers` line is commented out until the Domain controllers are online. Once the DC's are online uncomment and rerun an `apply`.
 
-Bugs are problems that exist with the technology or code that occur when expected behavior does not match implementation.
-For example, spelling mistakes on a dashboard.
+`tstate.tf` Update to the appropriate version and storage accounts, see sample
 
-Use the Bug fix template to describe the issue and expected behaviors.
+```hcl
+terraform {
+  required_version = ">= 1.1.7"
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 2.91.0"
+    }
+  }
+  backend "azurerm" {
+    resource_group_name  = "v1-prod-va-mp-core-rg"
+    storage_account_name = "v1prodvampsatfstate"
+    container_name       = "vav1tfstatecontainer"
+    environment          = "usgovernment"
+    key                  = "va-mgmt-network.tfstate"
+  }
+}
+```
 
-### Enhancements
+## Deployment steps
 
-Updates and changes to the code to support additional functionality, new features or improve engineering or operations usage of the technology.
-For example, adding a new widget to a dashboard to report on failed backups is enhancement.
+Change directory to the `mgmt/mgmt-network` folder in the primary region
 
-Use the Enhancement issue template to request enhancements to the codebase. Enhancements should be improvements that are applicable to wide variety of clients and projects. One of updates for a specific project should be handled locally. If you are unsure if something qualifies for an enhancement contact the repository code owner.
+Run `terraform init` to initialize modules and remote state.
 
-### Pull Requests
+Run `terraform plan` and evaluate the plan is expected.
 
-Code updates ideally are limited in scope to address one enhancement or bug fix per PR. The associated PR should be linked to the relevant issue.
+Run `terraform apply` to deploy.
 
-### Code Owners
+Update the `remote-data.tf` file to add the region setup state key
 
-- Primary Code owner: Douglas Francis (@douglas-f)
-- Backup Code owner: Kourosh Mobl (@kourosh-forti-hands)
+Rerun `terraform apply` to update all changes
 
-The responsibility of the code owners is to approve and Merge PR's on the repository, and generally manage and direct issue discussions.
+## Created Resources
 
-## Repository Settings
+| Resource | Description |
+|------|-------------|
+| Virtual Network | |
+| Subnet | Public /24 network |
+| Subnet | IAM /24 network |
+| Subnet | CICD /24 network |
+| Subnet | SecOps /24 network |
+| Subnet | SIEM /24 network |
+| Subnet | Monitor /24 network |
+| Subnet | Bastion /24 network |
 
-Settings that should be applied to repos
+## Next steps
 
-### Branch Protection
+Application VNet (terraform/prod/{region}/mgmt/mgmt-network)
 
-#### main Branch
+### Inputs
 
-- Require a pull request before merging
-- Require Approvals
-- Dismiss stale pull requests approvals when new commits are pushed
-- Require review from Code Owners
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:-----:|
 
-#### other branches
+## Outputs
 
-- add as needed
-
-### GitHub Actions
-
-Future state. There are current initiatives for running CI/CD tooling as GitHub actions.
+| Name | Description |
+|------|-------------|
+| usgv_mgmt_vnet_id | The id of the management vnet |
+| usgv_mgmt_vnet_name | The name of the management vnet |
+| usgv_mgmt_vnet_subnet_ids | The ids of subnets created inside the new vnet |
