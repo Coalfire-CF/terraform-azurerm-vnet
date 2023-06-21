@@ -1,18 +1,36 @@
-variable "vnet_name" {
-  description = "Name of the vnet to create"
+variable "name" {
+  description = "The virtual network name."
   type        = string
-  default     = "acctvnet"
 }
 
 variable "resource_group_name" {
-  description = "Name of the resource group to be imported."
+  type        = string
+  description = "The name of the resource group in which to create the resource in."
+}
+
+variable "location" {
+  description = "The Azure location/region to create resources in."
   type        = string
 }
 
 variable "address_space" {
   type        = list(string)
   description = "The address space that is used by the virtual network."
-  default     = ["10.0.0.0/16"]
+}
+
+variable "subnets" {
+  # Due to Terraform limitation = element types must all match for conversion to list, type is commented out but this shows what module expects
+  #   type = list(object({
+  #     subnet_name                                   = string
+  #     address_prefix                                = string
+  #     nsg_id                                        = string
+  #     subnet_service_endpoints                      = optional(list(string))
+  #     subnet_delegations                            = optional(map(any))
+  #     private_endpoint_network_policies_enabled     = optional(bool)
+  #     private_link_service_network_policies_enabled = optional(bool)
+  #     route_tables_id                               = optional(string)
+  #   }))
+  description = "List of maps with Subnet names and their configuration"
 }
 
 # If no values specified, this defaults to Azure DNS 
@@ -21,43 +39,16 @@ variable "dns_servers" {
   type        = list(string)
   default     = []
 }
-variable "subnets" {
-  description = "Map of maps with Subnet names and their configuration"
-}
-
-variable "nsg_ids" {
-  description = "A map of subnet name to Network Security Group IDs"
-  type        = map(string)
-  default     = {}
-}
-
-variable "route_tables_ids" {
-  description = "A map of subnet name to Route table ids"
-  type        = map(string)
-  default     = {}
-}
 
 variable "tags" {
   description = "The tags to associate with your network and subnets."
   type        = map(string)
 }
 
-variable "regional_tags" {
-  type        = map(string)
-  description = "Regional level tags"
-  default     = {}
-}
-
-variable "global_tags" {
-  type        = map(string)
-  description = "Global level tags"
-  default     = {}
-}
-
-variable "private_dns_zone_id" {
-  type        = string
-  description = "The ID of the Private DNS Zone."
-  default     = null
+variable "private_dns_zone_ids" {
+  type        = list(string)
+  description = "List of Private DNS Zone IDs to link with the vnet."
+  default     = []
 }
 
 variable "diag_log_analytics_id" {
