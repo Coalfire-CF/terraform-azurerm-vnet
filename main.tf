@@ -56,7 +56,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "main" {
 }
 
 module "diag" {
-  source                = "../msci-azure-diagnostic"
+  source                = "github.com/Coalfire-CF/ACE-Azure-Diagnostics"
   diag_log_analytics_id = var.diag_log_analytics_id
   resource_id           = azurerm_virtual_network.main.id
   resource_type         = "vnet"
