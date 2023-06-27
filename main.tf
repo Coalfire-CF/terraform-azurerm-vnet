@@ -24,10 +24,10 @@ resource "azurerm_subnet" "subnet" {
   dynamic "delegation" {
     for_each = try(each.value.subnet_delegations, [])
     content {
-      name = delegation.value
+      name = "delegation.value"
 
       service_delegation {
-        name    = delegation.value
+        name    = "delegation.value"
         actions = ["Microsoft.Network/virtualNetworks/subnets/join/action", "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action", "Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action"]
       }
     }
