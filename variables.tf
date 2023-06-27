@@ -59,3 +59,8 @@ variable "private_dns_zone_id" {
   description = "The ID of the Private DNS Zone."
   default     = null
 }
+
+variable "diag_log_analytics_id" {
+  type        = string
+  description = "ID of the Log Analytics workspace diag settings should be stored in."
+}
