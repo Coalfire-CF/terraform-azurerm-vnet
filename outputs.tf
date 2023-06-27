@@ -1,32 +1,32 @@
-output "id" {
-  description = "The ID of the VNet"
-  value       = azurerm_virtual_network.main.id
+output "vnet_id" {
+  description = "The id of the newly created VNet"
+  value       = azurerm_virtual_network.vnet.id
 }
 
-output "name" {
-  description = "The Name of the VNet"
-  value       = azurerm_virtual_network.main.name
+output "vnet_name" {
+  description = "The Name of the newly created VNet"
+  value       = azurerm_virtual_network.vnet.name
 }
 
-output "address_space" {
-  description = "The address space of the VNet"
-  value       = azurerm_virtual_network.main.address_space
+output "vnet_location" {
+  description = "The location of the newly created VNet"
+  value       = azurerm_virtual_network.vnet.location
 }
 
-output "subnet_ids" {
-  description = "Map with the IDs of the subnets created inside the VNet"
+output "vnet_address_space" {
+  description = "The address space of the newly created VNet"
+  value       = azurerm_virtual_network.vnet.address_space
+}
+
+output "vnet_subnets" {
+  description = "The ids of subnets created inside the new VNet"
   value       = local.azurerm_subnets
 }
 
 output "subnet_addresses" {
-  description = "Map with the cidr of subnets created inside the VNet"
+  description = "Map with the cidr of subnets created inside the new VNet"
   value = {
-    for index, subnet in azurerm_subnet.main :
+    for index, subnet in azurerm_subnet.subnet :
     subnet.name => subnet.address_prefixes.0
   }
-}
-
-output "resource_group_name" {
-  description = "The Resource Group Name of the VNet"
-  value       = azurerm_virtual_network.main.resource_group_name
 }

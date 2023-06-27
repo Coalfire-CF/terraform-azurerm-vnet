@@ -1,67 +1,65 @@
-resource "azurerm_virtual_network" "main" {
-  name                = var.name
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  address_space       = var.address_space
-  dns_servers         = var.dns_servers
-  tags                = var.tags
+data "azurerm_resource_group" "vnet" {
+  name = var.resource_group_name
 }
 
-resource "azurerm_subnet" "main" {
-  #for_each                                      = { for subnet in var.subnets : subnet.subnet_name => subnet }
-  for_each = var.subnets
-  # name                                          = each.value.subnet_name
-  name                 = each.key
-  resource_group_name  = var.resource_group_name
-  virtual_network_name = azurerm_virtual_network.main.name
-  #address_prefixes                              = [each.value.address_prefix]
-  address_prefixes = [each.value.address_prefix]
-  #service_endpoints                             = try(each.value.subnet_service_endpoints, null)
-  service_endpoints                             = each.value.subnet_service_endpoints
-  private_endpoint_network_policies_enabled     = try(each.value.private_endpoint_network_policies_enabled, true)
-  private_link_service_network_policies_enabled = try(each.value.private_link_service_network_policies_enabled, true)
+resource "azurerm_virtual_network" "vnet" {
+  name                = var.vnet_name
+  resource_group_name = data.azurerm_resource_group.vnet.name
+  location            = data.azurerm_resource_group.vnet.location
+  address_space       = var.address_space
+  dns_servers         = var.dns_servers
+  tags                = local.tags
+}
 
+resource "azurerm_subnet" "subnet" {
+  for_each                                       = var.subnets
+  name                                           = each.key
+  resource_group_name                            = data.azurerm_resource_group.vnet.name
+  virtual_network_name                           = azurerm_virtual_network.vnet.name
+  address_prefixes                               = [each.value.address_prefix]
+  service_endpoints                              = try(each.value.subnet_service_endpoints, null)
+  enforce_private_link_endpoint_network_policies = try(each.value.enforce_private_link_endpoint_network_policies, false)
+  enforce_private_link_service_network_policies  = try(each.value.enforce_private_link_service_network_policies, false)
 
   dynamic "delegation" {
-    for_each = try(each.value.subnet_delegations, {})
+    for_each = try(each.value.subnet_delegations, [])
     content {
-      name = delegation.key
+      name = delegation.value
 
       service_delegation {
-        name    = delegation.key
-        actions = delegation.value
+        name    = delegation.value
+        actions = ["Microsoft.Network/virtualNetworks/subnets/join/action", "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action", "Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action"]
       }
     }
   }
 }
 
-#NSG is required
-resource "azurerm_subnet_network_security_group_association" "main" {
-  for_each                  = { for subnet in var.subnets : subnet.subnet_name => subnet if can(subnet.nsg_id) }
-  subnet_id                 = local.azurerm_subnets[each.value.subnet_name]
-  network_security_group_id = each.value.nsg_id
+locals {
+  azurerm_subnets = {
+    for index, subnet in azurerm_virtual_network.vnet.subnet :
+    subnet.name => subnet.id
+  }
+  tags = merge(var.tags, var.regional_tags, var.global_tags)
 }
 
-#Route table is optional
-resource "azurerm_subnet_route_table_association" "main" {
-  for_each       = { for subnet in var.subnets : subnet.subnet_name => subnet if can(subnet.route_table_id) }
-  subnet_id      = local.azurerm_subnets[each.value.subnet_name]
-  route_table_id = each.value.route_table_id
+resource "azurerm_subnet_network_security_group_association" "vnet" {
+  for_each                  = var.nsg_ids
+  subnet_id                 = local.azurerm_subnets[each.key]
+  network_security_group_id = each.value
 }
 
-resource "azurerm_private_dns_zone_virtual_network_link" "main" {
-  for_each              = toset(var.private_dns_zone_ids)
-  name                  = "${azurerm_virtual_network.main.name}-link"
-  resource_group_name   = element(split("/", each.value), 4)                                  # get the resource group name
-  private_dns_zone_name = element(split("/", each.value), length(split("/", each.value)) - 1) # get the zone name
-  virtual_network_id    = azurerm_virtual_network.main.id
-  registration_enabled  = false
-  tags                  = var.tags
+resource "azurerm_subnet_route_table_association" "vnet" {
+  for_each       = var.route_tables_ids
+  route_table_id = each.value
+  subnet_id      = local.azurerm_subnets[each.key]
 }
 
-module "diag" {
-  source                = "github.com/Coalfire-CF/ACE-Azure-Diagnostics"
-  diag_log_analytics_id = var.diag_log_analytics_id
-  resource_id           = azurerm_virtual_network.main.id
-  resource_type         = "vnet"
+resource "azurerm_private_dns_zone_virtual_network_link" "default" {
+  count                 = var.private_dns_zone_id != null ? 1 : 0
+  name                  = "${azurerm_virtual_network.vnet.name}-link"
+  resource_group_name   = element(split("/", var.private_dns_zone_id), 4)                                               #get the resource group name
+  private_dns_zone_name = element(split("/", var.private_dns_zone_id), length(split("/", var.private_dns_zone_id)) - 1) #get the zone name
+  virtual_network_id    = azurerm_virtual_network.vnet.id
+  registration_enabled  = true
+  tags                  = local.tags
 }

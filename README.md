@@ -1,90 +1,97 @@
-# MSCI Azure VNet
+# Azure Vnet
+
+Vnet and subnet Deployment
 
 ## Description
 
 This Terraform module deploys a Virtual Network in Azure with a subnet or a set of subnets passed in as input parameters.
+
+The module does not create nor expose a security group. This would need to be defined separately as additional security rules on subnets in the deployed network.
 
 ## Resource List
 
 - Vnet
 - Subnets
 - NSG and route table associations
-- Monitor diagnostic setting
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| name | The virtual network name | string | N/A | yes |
-| resource_group_name | The name of the resource group in which to create the resource in | string | N/A | yes |
-| location | The Azure location/region to create resources in | string | N/A | yes |
-| address_space | The address space that is used by the virtual network | string | N/A | yes |
-| subnets | List of maps with Subnet names and their configuration | [{subnet_name=string,address_prefix=string,nsg_id=string,subnet_service_endpoints=optional(list(string)),subnet_delegations=optional(map(any)),private_endpoint_network_policies_enabled=optional(bool),private_link_service_network_policies_enabled=optional(bool),route_tables_id=optional(string)}] | N/A | yes |
+| resource_group_name | Name of the resource group to be imported | string | N/A | yes |
+| subnets | Map of maps with Subnet names and their configuration | map | N/A | yes |
 | tags | The tags to associate with your network and subnets | map(string) | N/A | yes |
-| diag_log_analytics_id | ID of the Log Analytics Workspace diagnostic logs should be sent to | string | N/A | yes |
+| vnet_name | Name of the vnet to create | string | acctvnet | no |
+| address_space | The address space that is used by the virtual network | string | 10.0.0.0/16 | no |
 | dns_servers | The DNS servers to be used with VNet | list(string) | [] | no |
-| private_dns_zone_ids | List of Private DNS Zone IDs to link with the vnet | list(string) | [] | no |
+| nsg_ids | A map of subnet name to Network Security Group IDs | map(string) | {} | no |
+| route_table_ids | A map of subnet name to Route table ids | map(string) | {} | no |
+| regional_tags | Regional level tags | map(string) | {} | no |
+| global_tags | Global level tags | map(string) | {} | no |
+| private_dns_zone_id | The ID of the Private DNS Zone. If passed, it will create a vnet link with the private DNS zone | string | null | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| id | The ID of the VNet |
-| name | The Name of the VNet |
-| resource_group_name | The Resource Group Name of the VNet |
-| address_space | The address space of the VNet | 
-| subnet_ids | Map with the IDs of the subnets created inside the VNet |
-| addresses | Map with the cidr of subnets created inside the VNet |
+| vnet_id | The ID of Redis Cache Instance |
+| vnet_name | The Name of the newly created VNet |
+| vnet_location | The location of the newly created VNet |
+| vnet_address_space | The address space of the newly created VNet | 
+| vnet_subnets | Map with the ids of subnets created inside the new VNet |
+| subnet_addresses | Map with the cidr of subnets created inside the new VNet |
 
 ## Product Limitations
 
-- Network policies, like network security groups (NSG), are not supported for Private Link Endpoints or Private Link Services. In order to deploy a Private Link Endpoint on a given subnet, you must set the `private_endpoint_network_policies_enabled` attribute to `false`.
-- In order to deploy a Private Link Service on a given subnet, you must set the `private_link_service_network_policies_enabled` attribute to `false`.
+- Network policies, like network security groups (NSG), are not supported for Private Link Endpoints or Private Link Services. In order to deploy a Private Link Endpoint on a given subnet, you must set the enforce_private_link_endpoint_network_policies attribute to true.
 
 ## Usage
-This module can be called as outlined below. 
-- Create a `local` folder under `terraform/azure`.
-- Create a `main.tf` file in the `local` folder. 
-- Copy the code below into `main.tf`.
-- From the `terraform/azure/local` directory run `terraform init`.
-- Run `terraform plan` to review the resources being created.
-- If everything looks correct in the plan output, run `terraform apply`.
-
 
 ```hcl
-provider "azurerm" {
-  features {}
-}
+module "app-vnet" {
+  source                   = "../azurerm-vnet"
+  vnet_name                = "app-vnet"
+  resource_group_name      = local.network_resource_group_name
+  address_space            = "10.2.0.0/16"
+  diag_log_analytics_id    = var.diag_la_id
 
-module "vnet" {
-  source = "../modules/msci-azure-vnet"
-
-  name                  = "mgmt-demo-us-vnet"
-  resource_group_name   = "mgmt-demo-us-rg"
-  location              = "eastus"
-  diag_log_analytics_id = "/subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.OperationalInsights/workspaces/<log_analytics_workspace_name>"
-  address_space         = ["10.0.0.0/16"]
-
-  subnets = [
-    {
-      subnet_name    = "mgmt-demo-us-common-sn"
-      address_prefix = "10.1.0.0/24"
-      nsg_id         = "/subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Network/networkSecurityGroups/<nsg_name>"
-    },
-    {
-      subnet_name    = "mgmt-demo-us-private_link-sn"
-      address_prefix = "10.2.0.0/24"
-      subnet_delegations = {
-        "Microsoft.DBforPostgreSQL/flexibleServers" = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
-      }
-      private_endpoint_network_policies_enabled = false
-      nsg_id                                    = "/subscriptions/<subscription_id>/resourceGroups/<resource_group_name>/providers/Microsoft.Network/networkSecurityGroups/<nsg_name>"
+  subnets = {
+    "subnet1" = {
+      address_prefix = "10.2.0.0/19"
+      subnet_service_endpoints = ["Microsoft.KeyVault", "Microsoft.Storage"]
     }
-  ]
+    "subnet2" = {
+      address_prefix = "10.2.32.0/26"
+      subnet_service_endpoints = ["Microsoft.KeyVault", "Microsoft.Storage"]
+      subnet_delegations = ["Microsoft.Databricks/workspaces"]
+    }
+    "subnet3" = {
+      address_prefix = "10.2.32.64/26"
+      subnet_service_endpoints = ["Microsoft.KeyVault", "Microsoft.Storage"]
+      subnet_delegations = ["Microsoft.Databricks/workspaces"]
+    }
+  }
 
   tags = {
-    Plane       = "Core"
-    Environment = "dev"
+    environment = "dev"
+    costcenter  = "it"
   }
+
+  depends_on = [azurerm_resource_group.example]
+
+  #OPTIONAL
+
+  route_tables_ids = {
+    subnet1 = azurerm_route_table.example.id
+    subnet2 = azurerm_route_table.example.id
+    subnet3 = azurerm_roiute_table.example.id
+  }
+
+  nsg_ids = {
+    subnet1 = azurerm_network_security_group.ssh.id
+    subnet2 = azurerm_network_security_group.ssh.id
+    subnet3 = azurerm_network_security_group.ssh.id
+  }
+
 }
 ```
