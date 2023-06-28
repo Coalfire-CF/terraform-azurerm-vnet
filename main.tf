@@ -40,7 +40,8 @@ locals {
     for index, subnet in azurerm_virtual_network.vnet.subnet :
     subnet.name => subnet.id
   }
-  tags = merge(var.tags, var.regional_tags, var.global_tags)
+  #tags = merge(var.tags, var.regional_tags, var.global_tags)
+  tags = local.tags
 }
 
 resource "azurerm_subnet_network_security_group_association" "vnet" {
