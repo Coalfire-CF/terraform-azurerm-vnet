@@ -21,7 +21,7 @@ The module does not create nor expose a security group. This would need to be de
 | resource_group_name | Name of the resource group to be imported | string | N/A | yes |
 | subnets | Map of maps with Subnet names and their configuration | map | N/A | yes |
 | tags | The tags to associate with your network and subnets | map(string) | N/A | yes |
-| vnet_name | Name of the vnet to create | string | acctvnet | no |
+| vnet_name | Name of the vnet to create | string | acctVnet | no |
 | address_space | The address space that is used by the virtual network | string | 10.0.0.0/16 | no |
 | dns_servers | The DNS servers to be used with VNet | list(string) | [] | no |
 | nsg_ids | A map of subnet name to Network Security Group IDs | map(string) | {} | no |
@@ -37,7 +37,7 @@ The module does not create nor expose a security group. This would need to be de
 | vnet_id | The ID of Redis Cache Instance |
 | vnet_name | The Name of the newly created VNet |
 | vnet_location | The location of the newly created VNet |
-| vnet_address_space | The address space of the newly created VNet | 
+| vnet_address_space | The address space of the newly created VNet |
 | vnet_subnets | Map with the ids of subnets created inside the new VNet |
 | subnet_addresses | Map with the cidr of subnets created inside the new VNet |
 
@@ -74,7 +74,7 @@ module "app-vnet" {
 
   tags = {
     environment = "dev"
-    costcenter  = "it"
+    costCenter  = "it"
   }
 
   depends_on = [azurerm_resource_group.example]
@@ -84,7 +84,7 @@ module "app-vnet" {
   route_tables_ids = {
     subnet1 = azurerm_route_table.example.id
     subnet2 = azurerm_route_table.example.id
-    subnet3 = azurerm_roiute_table.example.id
+    subnet3 = azurerm_route_table.example.id
   }
 
   nsg_ids = {

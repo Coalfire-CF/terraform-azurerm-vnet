@@ -54,6 +54,9 @@ resource "azurerm_subnet_route_table_association" "vnet" {
   subnet_id      = local.azurerm_subnets[each.key]
 }
 
+# Attach Vnet to Private DNS zone
+private_dns_zone_id = data.terraform_remote_state.core.outputs.core_private_dnz_zone_id
+
 resource "azurerm_private_dns_zone_virtual_network_link" "default" {
   count                 = var.private_dns_zone_id != null ? 1 : 0
   name                  = "${azurerm_virtual_network.vnet.name}-link"
