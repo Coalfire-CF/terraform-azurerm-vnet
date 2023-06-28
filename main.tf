@@ -21,6 +21,7 @@ resource "azurerm_subnet" "subnet" {
   #enforce_private_link_endpoint_network_policies = try(each.value.enforce_private_link_endpoint_network_policies, false)
   enforce_private_link_service_network_policies = try(each.value.enforce_private_link_service_network_policies, false)
 
+
   dynamic "delegation" {
     for_each = try(each.value.subnet_delegations, [])
     content {
@@ -55,7 +56,6 @@ resource "azurerm_subnet_route_table_association" "vnet" {
 }
 
 # Attach Vnet to Private DNS zone
-private_dns_zone_id = data.terraform_remote_state.core.outputs.core_private_dnz_zone_id
 
 resource "azurerm_private_dns_zone_virtual_network_link" "default" {
   count                 = var.private_dns_zone_id != null ? 1 : 0
