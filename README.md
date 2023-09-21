@@ -74,6 +74,11 @@ This module can be called as outlined below.
 ## Usage
 
 ```hcl
+provider "azurerm" {
+  features {}
+}
+
+
 module "subnet_addrs" {
   source          = "hashicorp/subnets/cidr"
   base_cidr_block = var.mgmt_network_cidr
