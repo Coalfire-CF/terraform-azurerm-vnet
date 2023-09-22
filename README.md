@@ -5,7 +5,9 @@
 
 # terraform-azurerm-vnet
 
-Repository for Azure VNet Module code. This repo should be used for Azure project to deploy VNets and subnets.
+Repository for Azure VNet Module code. This repo should be used for Azure project to deploy VNets and subnets in the [Coalfire-Azure-RAMPpak](https://github.com/Coalfire-CF/Coalfire-Azure-RAMPpak) FedRAMP Framework.
+
+Learn more at [Coalfire OpenSource](https://coalfire.com/opensource).
 
 ## Description
 
@@ -209,36 +211,9 @@ module "mgmt-vnet" {
 ```
 
 
-
-## Created Resources
-
-| Resource | Description |
-|------|-------------|
-| Virtual Network | |
-| Subnet | Public /24 network |
-| Subnet | IAM /24 network |
-| Subnet | CICD /24 network |
-| Subnet | SecOps /24 network |
-| Subnet | SIEM /24 network |
-| Subnet | Monitor /24 network |
-| Subnet | Bastion /24 network |
-
 ## Next steps
 
 Application VNet (terraform/prod/{region}/mgmt/mgmt-network)
-
-### Inputs
-
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:-----:|
-
-## Outputs
-
-| Name | Description |
-|------|-------------|
-| usgv_mgmt_vnet_id | The id of the management vnet |
-| usgv_mgmt_vnet_name | The name of the management vnet |
-| usgv_mgmt_vnet_subnet_ids | The ids of subnets created inside the new vnet |
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -255,7 +230,7 @@ No requirements.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_diag"></a> [diag](#module\_diag) | github.com/Coalfire-CF/ACE-Azure-Diagnostics | n/a |
+| <a name="module_diag"></a> [diag](#module\_diag) | github.com/Coalfire-CF/ | n/a |
 
 ## Resources
 
