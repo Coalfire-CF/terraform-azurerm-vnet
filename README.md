@@ -271,3 +271,19 @@ No requirements.
 | <a name="output_vnet_name"></a> [vnet\_name](#output\_vnet\_name) | The Name of the newly created VNet |
 | <a name="output_vnet_subnets"></a> [vnet\_subnets](#output\_vnet\_subnets) | The ids of subnets created inside the new VNet |
 <!-- END_TF_DOCS -->
+
+## Contributing
+
+[Start Here](CONTRIBUTING.md)
+
+## License
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/license/mit/)
+
+## Contact Us
+
+[Coalfire](https://coalfire.com/)
+
+### Copyright
+
+Copyright © 2023 Coalfire Systems Inc.
