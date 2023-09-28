@@ -1,7 +1,4 @@
-<div align="center">
-<img src="coalfire_logo.png">
-
-</div>
+![Coalfire](coalfire_logo.png)
 
 # terraform-azurerm-vnet
 
