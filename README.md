@@ -1,5 +1,5 @@
 <div align="center">
-<img src="coalfire_logo.png" width="200">
+<img src="coalfire_logo.png">
 
 </div>
 
