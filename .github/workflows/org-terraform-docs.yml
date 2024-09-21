@@ -4,5 +4,5 @@ on:
     workflow_call:
 
 jobs:
-  terraform-docs:
+  Terraform_Docs:
     uses: Coalfire-CF/Actions/.github/workflows/org-terraform-docs.yml@main
