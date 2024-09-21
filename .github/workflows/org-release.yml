@@ -7,5 +7,5 @@ on:
         - main
 
 jobs:
-  create-release:
+  Create-Release:
     uses: Coalfire-CF/Actions/.github/workflows/org-release.yml@main

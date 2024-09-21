@@ -1,25 +1,11 @@
-name: Terraform Validate
-
+name: Org Terraform Validate
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    pull_request:
+        types:
+        - opened
 
 jobs:
-  verify:
-    name: Validate Terraform Configuration
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
-      with:
-        terraform_version: 1.5.0
-    - name: Initialise with no backend
-      run: terraform init -backend=false
-    - name: Validate the configuration
-      run: terraform validate
+  Terraform_Validate:
+    uses: Coalfire-CF/Actions/.github/workflows/org-terraform-validate.yml@main
+    with:
+      terraform_version: '1.9.5'
