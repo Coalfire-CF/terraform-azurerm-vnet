@@ -180,9 +180,7 @@ module "mgmt-vnet" {
       "${local.resource_prefix}-psql-sn-1" = {
         address_prefix           = module.subnet_addrs.network_cidr_blocks["${local.resource_prefix}-psql-sn-1"]
         subnet_service_endpoints = ["Microsoft.KeyVault", "Microsoft.Storage", "Microsoft.Sql"]
-        subnet_delegations = {
-          "Microsoft.DBforPostgreSQL/flexibleServers" = ["Microsoft.Sql"]
-        }
+        subnet_delegations = ["Microsoft.DBforPostgreSQL/flexibleServers"]
         enforce_private_link_endpoint_network_policies = true
       }
     }
