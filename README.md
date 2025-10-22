@@ -190,7 +190,7 @@ module "mgmt-vnet" {
   diag_log_analytics_id = data.terraform_remote_state.core.outputs.core_la_id
   
   #Attach Vnet to Private DNS zone
-  private_dns_zone_id = data.terraform_remote_state.core.outputs.core_private_dns_zone_id.0
+  private_dns_zone_id = 
 
   #Note: DNS servers should be left to Azure default until the DC's are up. Otherwise the VM's will fail to get DNS to download scripts from storage accounts.
   #dns_servers   = concat(data.terraform_remote_state.usgv-ad.outputs.ad_dc1_ip, data.terraform_remote_state.usgv-ad.outputs.ad_dc2_ip)

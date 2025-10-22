@@ -59,7 +59,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "default" {
   for_each = var.create_private_dns_zone ? var.core_private_dns_zone_ids : {}
 
   # sanitize the zone name: replace '.' with '-' for the link name
-  name = "${azurerm_virtual_network.vnet.name}-link-${replace(each.key, ".", "-")}"
+  name = "${azurerm_virtual_network.vnet.name}-${replace(each.key, ".", "-")}"
 
   resource_group_name   = element(split("/", each.value), 4)
   private_dns_zone_name = each.key
