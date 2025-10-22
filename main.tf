@@ -58,13 +58,16 @@ resource "azurerm_subnet_route_table_association" "vnet" {
 resource "azurerm_private_dns_zone_virtual_network_link" "default" {
   for_each = var.create_private_dns_zone ? var.core_private_dns_zone_ids : {}
 
-  name                  = "${azurerm_virtual_network.vnet.name}-link-${each.key}"
+  # sanitize the zone name: replace '.' with '-' for the link name
+  name = "${azurerm_virtual_network.vnet.name}-link-${replace(each.key, ".", "-")}"
+
   resource_group_name   = element(split("/", each.value), 4)
-  private_dns_zone_name = element(split("/", each.value), length(split("/", each.value)) - 1)
+  private_dns_zone_name = each.key
   virtual_network_id    = azurerm_virtual_network.vnet.id
   registration_enabled  = false
   tags                  = local.tags
 }
+
 
 # resource "azurerm_private_dns_zone_virtual_network_link" "default" {
 #   count                 = var.private_dns_zone_id != null ? 1 : 0
