@@ -60,6 +60,18 @@ variable "private_dns_zone_id" {
   default     = null
 }
 
+variable "core_private_dns_zone_ids" {
+  description = "Map of core Azure Private DNS zone names to their resource IDs."
+  type        = map(string)
+  default     = {}
+}
+
+variable "create_private_dns_zone" {
+  description = "Boolean to control whether to create Private DNS Zone link. Depends on Private DNS Zones already existing."
+  type        = bool
+  default     = true
+}
+
 variable "diag_log_analytics_id" {
   description = "ID of the Log Analytics Workspace diagnostic logs should be sent to"
   type        = string
