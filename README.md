@@ -204,7 +204,6 @@ module "mgmt-vnet" {
 
 ```
 
-
 ## Next steps
 
 Application VNet (terraform/prod/{region}/mgmt/mgmt-network)

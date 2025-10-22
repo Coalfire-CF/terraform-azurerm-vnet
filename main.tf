@@ -68,17 +68,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "default" {
   tags                  = local.tags
 }
 
-
-# resource "azurerm_private_dns_zone_virtual_network_link" "default" {
-#   count                 = var.private_dns_zone_id != null ? 1 : 0
-#   name                  = "${azurerm_virtual_network.vnet.name}-link"
-#   resource_group_name   = element(split("/", var.private_dns_zone_id), 4)                                               #get the resource group name
-#   private_dns_zone_name = element(split("/", var.private_dns_zone_id), length(split("/", var.private_dns_zone_id)) - 1) #get the zone name
-#   virtual_network_id    = azurerm_virtual_network.vnet.id
-#   registration_enabled  = true
-#   tags                  = local.tags
-# }
-
 module "diag" {
   source                = "git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics?ref=v1.1.0"
   diag_log_analytics_id = var.diag_log_analytics_id
