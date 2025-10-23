@@ -54,18 +54,22 @@ resource "azurerm_subnet_route_table_association" "vnet" {
   subnet_id      = local.azurerm_subnets[each.key]
 }
 
+
 resource "azurerm_private_dns_zone_virtual_network_link" "default" {
-  count                 = var.private_dns_zone_id != null ? 1 : 0
-  name                  = "${azurerm_virtual_network.vnet.name}-link"
-  resource_group_name   = element(split("/", var.private_dns_zone_id), 4)                                               #get the resource group name
-  private_dns_zone_name = element(split("/", var.private_dns_zone_id), length(split("/", var.private_dns_zone_id)) - 1) #get the zone name
+  for_each = var.create_private_dns_zone ? var.core_private_dns_zone_ids : {}
+
+  # sanitize the zone name: replace '.' with '-' for the link name
+  name = "${azurerm_virtual_network.vnet.name}-${replace(each.key, ".", "-")}"
+
+  resource_group_name   = element(split("/", each.value), 4)
+  private_dns_zone_name = each.key
   virtual_network_id    = azurerm_virtual_network.vnet.id
-  registration_enabled  = true
+  registration_enabled  = false
   tags                  = local.tags
 }
 
 module "diag" {
-  source                = "git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics?ref=v1.0.0"
+  source                = "git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics?ref=v1.1.0"
   diag_log_analytics_id = var.diag_log_analytics_id
   resource_id           = azurerm_virtual_network.vnet.id
   resource_type         = "vnet"

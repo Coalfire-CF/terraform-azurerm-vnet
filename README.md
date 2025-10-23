@@ -186,12 +186,11 @@ module "mgmt-vnet" {
     }
   }
 
+  #Log Analytics 
   diag_log_analytics_id = data.terraform_remote_state.core.outputs.core_la_id
-  # storage_account_flowlogs_id     = data.terraform_remote_state.setup.outputs.storage_account_flowlogs_id
-  #network_watcher_name            = data.terraform_remote_state.setup.outputs.network_watcher_name
-
+  
   #Attach Vnet to Private DNS zone
-  private_dns_zone_id = data.terraform_remote_state.core.outputs.core_private_dns_zone_id.0
+  private_dns_zone_id = data.terraform_remote_state.core.outputs.core_map_private_dns_zone_ids #Value is an input of a Map of Private DNS zone names to their resource IDs
 
   #Note: DNS servers should be left to Azure default until the DC's are up. Otherwise the VM's will fail to get DNS to download scripts from storage accounts.
   #dns_servers   = concat(data.terraform_remote_state.usgv-ad.outputs.ad_dc1_ip, data.terraform_remote_state.usgv-ad.outputs.ad_dc2_ip)
@@ -204,7 +203,6 @@ module "mgmt-vnet" {
 }
 
 ```
-
 
 ## Next steps
 
@@ -225,7 +223,7 @@ No requirements.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_diag"></a> [diag](#module\_diag) | git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics | v1.0.0 |
+| <a name="module_diag"></a> [diag](#module\_diag) | git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics | v1.1.0 |
 
 ## Resources
 
@@ -243,6 +241,8 @@ No requirements.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_address_space"></a> [address\_space](#input\_address\_space) | The address space that is used by the virtual network. | `list(string)` | <pre>[<br/>  "10.0.0.0/16"<br/>]</pre> | no |
+| <a name="input_core_private_dns_zone_ids"></a> [core\_private\_dns\_zone\_ids](#input\_core\_private\_dns\_zone\_ids) | Map of core Azure Private DNS zone names to their resource IDs. | `map(string)` | `{}` | no |
+| <a name="input_create_private_dns_zone"></a> [create\_private\_dns\_zone](#input\_create\_private\_dns\_zone) | Boolean to control whether to create Private DNS Zone link. Depends on Private DNS Zones already existing. | `bool` | `true` | no |
 | <a name="input_diag_log_analytics_id"></a> [diag\_log\_analytics\_id](#input\_diag\_log\_analytics\_id) | ID of the Log Analytics Workspace diagnostic logs should be sent to | `string` | n/a | yes |
 | <a name="input_dns_servers"></a> [dns\_servers](#input\_dns\_servers) | The DNS servers to be used with VNet. | `list(string)` | `[]` | no |
 | <a name="input_global_tags"></a> [global\_tags](#input\_global\_tags) | Global level tags | `map(string)` | `{}` | no |
@@ -282,3 +282,17 @@ No requirements.
 ### Copyright
 
 Copyright © 2023 Coalfire Systems Inc.
+## Tree
+```
+.
+|-- CONTRIBUTING.md
+|-- LICENSE
+|-- License.md
+|-- README.md
+|-- coalfire_logo.png
+|-- main.tf
+|-- outputs.tf
+|-- release-please-config.json
+|-- update-readme-tree.sh
+|-- variables.tf
+```
