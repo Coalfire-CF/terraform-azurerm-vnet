@@ -69,7 +69,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "default" {
 }
 
 module "diag" {
-  source                = "git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics?ref=v1.1.0"
+  source                = "git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics?ref=v1.1.4"
   diag_log_analytics_id = var.diag_log_analytics_id
   resource_id           = azurerm_virtual_network.vnet.id
   resource_type         = "vnet"
