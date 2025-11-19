@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.1](https://github.com/Coalfire-CF/terraform-azurerm-vnet/compare/v1.1.0...v1.1.1) (2025-11-19)
+
+
+### Miscellaneous
+
+* **deps:** bump diag::terraform-azurerm-diagnostics ([193a98b](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/193a98b6b99ba7deb99c05b6ac591aa905099155))
+* **deps:** bump diag::terraform-azurerm-diagnostics from 1.1.0 to 1.1.4 ([1a026fe](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/1a026fefdfd87e2168241653f8651e2ba94e8414))
+* remove old LICENSE file ([1f0a688](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/1f0a688a32cfd187dcf003286b73e6aa594e829c))
+* remove old LICENSE file ([cee0719](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/cee0719021aa6baacdf1dc095f846795697b5d52))
+* update README tree ([7f05711](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/7f05711ec6867dbf4c2eac6b196d238dc27ab790))
+
 ## [1.1.0](https://github.com/Coalfire-CF/terraform-azurerm-vnet/compare/v1.0.4...v1.1.0) (2025-10-23)
 
 
