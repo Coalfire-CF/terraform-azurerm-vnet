@@ -10,6 +10,8 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    labels:
+      - "dep/github-actions"
   - package-ecosystem: "terraform"
     directory: "/"
     schedule:
@@ -17,3 +19,5 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    labels:
+      - "dep/terraform-module"
