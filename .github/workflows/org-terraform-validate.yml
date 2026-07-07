@@ -6,8 +6,6 @@ permissions:
 
 on:
   pull_request:
-    types:
-      - opened
     paths:
       - "**.tf"
       - "**.tfvars"
@@ -16,8 +14,8 @@ on:
       - "**/terraform/**"
 
 jobs:
-  create-release:
-    uses: Coalfire-CF/Actions/.github/workflows/org-terraform-validate.yml@v0.10.0
+  terraform-validate:
+    uses: Coalfire-CF/Actions/.github/workflows/org-terraform-validate.yml@9451b979c22b3762b3c8a7d4d9493fefaee7edc5 # v0.11.3
     with:
       terraform_version: "1.13.3"
     secrets: inherit
