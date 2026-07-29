@@ -282,18 +282,3 @@ No requirements.
 ### Copyright
 
 Copyright © 2023 Coalfire Systems Inc.
-
-## Tree
-
-```text
-.
-|-- CHANGELOG.md
-|-- CONTRIBUTING.md
-|-- LICENSE
-|-- README.md
-|-- coalfire_logo.png
-|-- main.tf
-|-- outputs.tf
-|-- release-please-config.json
-|-- variables.tf
-```
