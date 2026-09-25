@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.1.2](https://github.com/Coalfire-CF/terraform-azurerm-vnet/compare/v1.1.1...v1.1.2) (2026-09-25)
+
+
+### Miscellaneous
+
+* adopt Actions v0.12.1 (bypass auto-merge + event-driven re-merge) ([d946a74](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/d946a7480da9d4bbadc418e73355c4bcfa1cb2e0))
+* **ci:** add org-dependabot-auto-merge caller (v0.11.3) ([#125](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/125)) ([88fbef0](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/88fbef0ed84eba6354c03ed9ff4628440ab5ba91))
+* **ci:** adopt Coalfire-CF/Actions v0.11.3 ([#123](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/123)) ([93ee4a5](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/93ee4a5111b3698593a08d9a912845e93d6be513))
+* **deps:** bump the org-actions group across 1 directory with 7 updates ([#137](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/137)) ([5b670e3](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/5b670e3d0676c1dc7a3fb291a7d38fb6f1441638))
+* **deps:** bump the org-actions group with 7 updates ([#132](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/132)) ([dd2163d](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/dd2163dbf83b0b972c2dddd161381afa6659da09))
+* **deps:** bump the org-actions group with 8 updates ([#126](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/126)) ([87b402f](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/87b402f0ec1d7a9a0e323ad141df05ea376e276b))
+* **deps:** bump the org-actions group with 8 updates ([#127](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/127)) ([177a6dc](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/177a6dc13048303dc777422b11b5808cc4297e0a))
+* **deps:** bump the org-actions group with 8 updates ([#128](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/128)) ([35d2b0a](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/35d2b0a6d1bd1a476fd7dea2eece1f246a2aadee))
+* **deps:** bump the org-actions group with 8 updates ([#129](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/129)) ([1e5aab3](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/1e5aab32112ee0d26780fbb7b9ced41996cbeaa0))
+* **docs:** generate README from _header.md and _footer.md ([#135](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/135)) ([56724f6](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/56724f695afcf2af377ae2396fccab83787ece9b))
+* refresh PR template ([#134](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/134)) ([c2371ac](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/c2371acbbcebb1284620a8c69e1641829c33c2e9))
+* retire org-tree-readme ([#130](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/130)) ([3222a5f](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/3222a5f8dcea4e433256426d064e7cc124efb8bf))
+
 ## [1.1.1](https://github.com/Coalfire-CF/terraform-azurerm-vnet/compare/v1.1.0...v1.1.1) (2026-07-06)
 
 
