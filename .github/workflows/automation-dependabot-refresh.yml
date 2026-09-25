@@ -1,4 +1,4 @@
-name: Refresh dependabot on PR
+name: "Automation: Dependabot refresh"
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   refresh:
-    uses: Coalfire-CF/Actions/.github/workflows/org-dependabot.yml@162d71ff9bace6c2994b3b8d9e5bfc33f6b54eed # v0.18.0
+    uses: Coalfire-CF/Actions/.github/workflows/automation-dependabot-refresh.yml@88e02c851b87f8042147e1ba9f340b49ab1b628b # v1.0.0
     with:
       head_branch: ${{ github.head_ref || github.ref_name }}  # PR head, or current branch if not a PR
       include_github_actions: "true"
