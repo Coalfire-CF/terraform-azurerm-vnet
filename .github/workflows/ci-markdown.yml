@@ -1,4 +1,4 @@
-name: Markdown Lint
+name: "CI: Markdown"
 
 permissions:
   contents: write
@@ -14,4 +14,4 @@ on:
 
 jobs:
   check-markdown:
-    uses: Coalfire-CF/Actions/.github/workflows/org-markdown-lint.yml@162d71ff9bace6c2994b3b8d9e5bfc33f6b54eed # v0.18.0
+    uses: Coalfire-CF/Actions/.github/workflows/ci-markdown.yml@88e02c851b87f8042147e1ba9f340b49ab1b628b # v1.0.0
