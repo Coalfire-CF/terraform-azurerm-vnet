@@ -44,11 +44,11 @@ Learn more at [Coalfire OpenSource](https://coalfire.com/opensource).
 
 ```hcl
 terraform {
-  required_version = ">= 1.1.7"
+  required_version = ">= 1.16"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.45.0"
+      version = "~> 5.7"
     }
   }
   backend "azurerm" {

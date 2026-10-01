@@ -46,11 +46,11 @@ Learn more at [Coalfire OpenSource](https://coalfire.com/opensource).
 
 ```hcl
 terraform {
-  required_version = ">= 1.1.7"
+  required_version = ">= 1.16"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.45.0"
+      version = "~> 5.7"
     }
   }
   backend "azurerm" {
@@ -211,19 +211,22 @@ Application VNet (terraform/prod/{region}/mgmt/mgmt-network)
 <!-- markdownlint-disable MD033 MD034 MD060 -->
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.16 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 5.7 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | n/a |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 5.7.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_diag"></a> [diag](#module\_diag) | git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics | v1.1.4 |
+| <a name="module_diag"></a> [diag](#module\_diag) | git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics | 95c168fb7ea1fcdd10a7e174973ea3ed440b0327 |
 
 ## Resources
 
