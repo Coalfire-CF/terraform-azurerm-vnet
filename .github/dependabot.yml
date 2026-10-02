@@ -27,18 +27,23 @@ updates:
     directories:
       - "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
       time: "07:53"
+    open-pull-requests-limit: 2
     commit-message:
       prefix: "chore"
       include: "scope"
     labels:
       - "dep/terraform-module"
     groups:
+      coalfire-modules:
+        applies-to: version-updates
+        patterns: ["*::github::Coalfire-CF/*"]
       terraform:
         applies-to: version-updates
         group-by: dependency-name
         patterns: ["*"]
+        exclude-patterns: ["*::github::Coalfire-CF/*"]
       terraform-security:
         applies-to: security-updates
         group-by: dependency-name
