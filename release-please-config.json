@@ -25,10 +25,11 @@
           "type": "docs"
         }
       ],
-      "draft": false,
+      "draft": true,
       "extra-files": [],
       "release-type": "terraform-module",
-      "versioning": "default"
+      "versioning": "default",
+      "force-tag-creation": true
     }
   }
 }
