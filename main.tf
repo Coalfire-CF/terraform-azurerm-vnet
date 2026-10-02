@@ -12,14 +12,22 @@ resource "azurerm_virtual_network" "vnet" {
 }
 
 resource "azurerm_subnet" "subnet" {
-  for_each                                       = var.subnets
-  name                                           = each.key
-  resource_group_name                            = data.azurerm_resource_group.vnet.name
-  virtual_network_name                           = azurerm_virtual_network.vnet.name
-  address_prefixes                               = [each.value.address_prefix]
-  service_endpoints                              = try(each.value.subnet_service_endpoints, null)
-  private_endpoint_network_policies              = try(each.value.private_endpoint_network_policies, "Disabled")
-  private_link_service_network_policies_enabled  = try(each.value.private_link_service_network_policies_enabled, false)
+  for_each                                      = var.subnets
+  name                                          = each.key
+  resource_group_name                           = data.azurerm_resource_group.vnet.name
+  virtual_network_name                          = azurerm_virtual_network.vnet.name
+  address_prefixes                              = [each.value.address_prefix]
+  private_endpoint_network_policies             = try(each.value.private_endpoint_network_policies, "Disabled")
+  private_link_service_network_policies_enabled = try(each.value.private_link_service_network_policies_enabled, false)
+
+  # azurerm 5.x replaced the service_endpoints list with service_endpoint blocks.
+  # The input stays a list of service names, so callers do not change.
+  dynamic "service_endpoint" {
+    for_each = try(each.value.subnet_service_endpoints, [])
+    content {
+      service = service_endpoint.value
+    }
+  }
 
   dynamic "delegation" {
     for_each = try(each.value.subnet_delegations, [])
@@ -61,15 +69,14 @@ resource "azurerm_private_dns_zone_virtual_network_link" "default" {
   # sanitize the zone name: replace '.' with '-' for the link name
   name = "${azurerm_virtual_network.vnet.name}-${replace(each.key, ".", "-")}"
 
-  resource_group_name   = element(split("/", each.value), 4)
-  private_dns_zone_name = each.key
-  virtual_network_id    = azurerm_virtual_network.vnet.id
-  registration_enabled  = false
-  tags                  = local.tags
+  private_dns_zone_id  = each.value
+  virtual_network_id   = azurerm_virtual_network.vnet.id
+  registration_enabled = false
+  tags                 = local.tags
 }
 
 module "diag" {
-  source                = "git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics?ref=v1.1.4"
+  source                = "git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics?ref=95c168fb7ea1fcdd10a7e174973ea3ed440b0327"
   diag_log_analytics_id = var.diag_log_analytics_id
   resource_id           = azurerm_virtual_network.vnet.id
   resource_type         = "vnet"
