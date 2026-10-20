@@ -226,7 +226,7 @@ Application VNet (terraform/prod/{region}/mgmt/mgmt-network)
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_diag"></a> [diag](#module\_diag) | git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics | 95c168fb7ea1fcdd10a7e174973ea3ed440b0327 |
+| <a name="module_diag"></a> [diag](#module\_diag) | git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics | v2.0.0 |
 
 ## Resources
 
