@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.0.0](https://github.com/Coalfire-CF/terraform-azurerm-vnet/compare/v1.1.2...v2.0.0) (2026-10-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* consumers on azurerm 4.x or Terraform below 1.16 must upgrade.
+
+### Features
+
+* support azurerm 5.7 and Terraform 1.16 ([#142](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/142)) ([5ff9036](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/5ff9036e11f4c598e492b4aefc7e2941bf57cd00))
+
+
+### Miscellaneous
+
+* **deps:** bump the org-actions group with 7 updates ([#145](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/145)) ([4624e85](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/4624e85c542216be3d1ce3376f5632b3a9c7a885))
+
 ## [1.1.2](https://github.com/Coalfire-CF/terraform-azurerm-vnet/compare/v1.1.1...v1.1.2) (2026-10-20)
 
 
