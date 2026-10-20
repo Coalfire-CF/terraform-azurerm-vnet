@@ -50,7 +50,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 5.7"
+      version = "~> 2.0"
     }
   }
   backend "azurerm" {
