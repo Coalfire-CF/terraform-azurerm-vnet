@@ -29,6 +29,7 @@ Learn more at [Coalfire OpenSource](https://coalfire.com/opensource).
 | Route table associations | One per entry in `route_tables_ids`. The route tables are caller inputs. |
 | Private DNS zone VNet links | One per entry in `core_private_dns_zone_ids` when `create_private_dns_zone` is true. The zones must already exist. |
 | Diagnostic settings | Sent to `diag_log_analytics_id` through `terraform-azurerm-diagnostics`. |
+| VNet flow log | One flow log with traffic analytics on the VNet when `flow_log` is set. Off by default. |
 
 ## Secure defaults
 
@@ -39,6 +40,23 @@ Each subnet in `subnets` gets these defaults. They follow Azure Verified Modules
 - `default_outbound_access_enabled = false`. VMs get no implicit internet egress. A subnet that needs egress can set `true`, but prefer a NAT gateway or a firewall route.
 
 NSGs are caller inputs through `nsg_ids`. That is why the module skips checkov `CKV2_AZURE_31` on `azurerm_subnet`.
+
+## VNet flow logs
+
+Flow logs are off by default. Set `flow_log` to turn them on. Azure no longer allows new NSG flow logs, so this replaces them.
+
+Turning it on needs:
+
+- An existing Network Watcher in the VNet's region and in the provider's subscription. Azure creates `NetworkWatcher_<region>` in `NetworkWatcherRG` by default.
+- A Standard GPv2 storage account in the VNet's region.
+- A Log Analytics workspace.
+- The `Microsoft.Insights` resource provider registered in the subscription.
+
+`log_analytics_workspace_id` is the workspace GUID (the `workspace_id` attribute of `azurerm_log_analytics_workspace`), not its resource ID.
+
+Records are kept for 90 days by default. Set `flow_log_retention_days` to change it: 0 keeps them forever, otherwise the value must be at least 90. Traffic analytics runs every 60 minutes by default. Set `flow_log_traffic_analytics_interval_in_minutes` to 10 or 60. The module writes flow log format version 2.
+
+The provider creates a lifecycle management rule on the storage account that overwrites any existing rules. Use a storage account with no other lifecycle rules.
 
 ## Usage
 
@@ -103,6 +121,7 @@ module "vnet" {
 
 | Name | Type |
 |------|------|
+| [azurerm_network_watcher_flow_log.vnet](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_watcher_flow_log) | resource |
 | [azurerm_private_dns_zone_virtual_network_link.default](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) | resource |
 | [azurerm_subnet.subnet](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) | resource |
 | [azurerm_subnet_network_security_group_association.vnet](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_network_security_group_association) | resource |
@@ -119,6 +138,9 @@ module "vnet" {
 | <a name="input_create_private_dns_zone"></a> [create\_private\_dns\_zone](#input\_create\_private\_dns\_zone) | When true, link the VNet to every zone in core\_private\_dns\_zone\_ids. The zones must already exist. | `bool` | `true` | no |
 | <a name="input_diag_log_analytics_id"></a> [diag\_log\_analytics\_id](#input\_diag\_log\_analytics\_id) | ID of the Log Analytics Workspace diagnostic logs should be sent to | `string` | n/a | yes |
 | <a name="input_dns_servers"></a> [dns\_servers](#input\_dns\_servers) | The DNS servers to be used with VNet. | `list(string)` | `[]` | no |
+| <a name="input_flow_log"></a> [flow\_log](#input\_flow\_log) | Turns on a VNet flow log with traffic analytics when set. Default null (off). Needs an existing Network Watcher in the VNet region, a Standard GPv2 storage account in the VNet region, and a Log Analytics workspace. log\_analytics\_workspace\_id is the workspace GUID (customer ID), not its resource ID. name defaults to <vnet\_name>-flowlog. | <pre>object({<br/>    network_watcher_name                = string<br/>    network_watcher_resource_group_name = string<br/>    storage_account_id                  = string<br/>    log_analytics_workspace_id          = string<br/>    log_analytics_workspace_resource_id = string<br/>    log_analytics_workspace_region      = string<br/>    name                                = optional(string)<br/>  })</pre> | `null` | no |
+| <a name="input_flow_log_retention_days"></a> [flow\_log\_retention\_days](#input\_flow\_log\_retention\_days) | Days to keep flow log records in the storage account when flow\_log is set. 0 keeps them indefinitely. Otherwise at least 90. | `number` | `90` | no |
+| <a name="input_flow_log_traffic_analytics_interval_in_minutes"></a> [flow\_log\_traffic\_analytics\_interval\_in\_minutes](#input\_flow\_log\_traffic\_analytics\_interval\_in\_minutes) | Traffic analytics processing interval in minutes when flow\_log is set. 10 or 60. | `number` | `60` | no |
 | <a name="input_global_tags"></a> [global\_tags](#input\_global\_tags) | Global level tags | `map(string)` | `{}` | no |
 | <a name="input_nsg_ids"></a> [nsg\_ids](#input\_nsg\_ids) | A map of subnet name to Network Security Group IDs | `map(string)` | `{}` | no |
 | <a name="input_regional_tags"></a> [regional\_tags](#input\_regional\_tags) | Regional level tags | `map(string)` | `{}` | no |
@@ -132,6 +154,7 @@ module "vnet" {
 
 | Name | Description |
 |------|-------------|
+| <a name="output_flow_log_id"></a> [flow\_log\_id](#output\_flow\_log\_id) | Resource ID of the VNet flow log, or null when flow\_log is not set. |
 | <a name="output_subnet_addresses"></a> [subnet\_addresses](#output\_subnet\_addresses) | Map with the cidr of subnets created inside the new VNet |
 | <a name="output_vnet_address_space"></a> [vnet\_address\_space](#output\_vnet\_address\_space) | The address space of the newly created VNet |
 | <a name="output_vnet_id"></a> [vnet\_id](#output\_vnet\_id) | The id of the newly created VNet |

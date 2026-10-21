@@ -30,3 +30,8 @@ output "subnet_addresses" {
     subnet.name => subnet.address_prefixes[0]
   }
 }
+
+output "flow_log_id" {
+  description = "Resource ID of the VNet flow log, or null when flow_log is not set."
+  value       = one(azurerm_network_watcher_flow_log.vnet[*].id)
+}
