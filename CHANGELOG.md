@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/Coalfire-CF/terraform-azurerm-vnet/compare/v3.0.0...v3.1.0) (2026-10-21)
+
+
+### Features
+
+* add optional VNet flow logs with traffic analytics ([#150](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/150)) ([8e1502f](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/8e1502f508fb11a376061819e51e953a27f946af))
+
 ## [3.0.0](https://github.com/Coalfire-CF/terraform-azurerm-vnet/compare/v2.0.0...v3.0.0) (2026-10-21)
 
 
