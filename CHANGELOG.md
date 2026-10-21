@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/Coalfire-CF/terraform-azurerm-vnet/compare/v2.0.0...v3.0.0) (2026-10-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires Terraform >= 1.16.6 and azurerm ~> 5.10. subnets is typed and three subnet defaults change. private_dns_zone_id is removed. nsg_ids and route_tables_ids keys must name a subnet.
+
+### Features
+
+* require Terraform 1.16.6 and azurerm 5.10 ([#148](https://github.com/Coalfire-CF/terraform-azurerm-vnet/issues/148)) ([850a927](https://github.com/Coalfire-CF/terraform-azurerm-vnet/commit/850a927d6eabee955ff8605f2335524c57a4cee5))
+
 ## [2.0.0](https://github.com/Coalfire-CF/terraform-azurerm-vnet/compare/v1.1.2...v2.0.0) (2026-10-20)
 
 
