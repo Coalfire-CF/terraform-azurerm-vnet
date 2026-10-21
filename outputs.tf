@@ -25,9 +25,8 @@ output "vnet_subnets" {
 
 output "subnet_addresses" {
   description = "Map with the cidr of subnets created inside the new VNet"
-  #value       = values(azurerm_subnet.subnet)[*].address_prefixes
   value = {
     for index, subnet in azurerm_subnet.subnet :
-    subnet.name => subnet.address_prefixes.0
+    subnet.name => subnet.address_prefixes[0]
   }
 }

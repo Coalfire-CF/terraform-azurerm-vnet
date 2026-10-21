@@ -12,25 +12,27 @@ resource "azurerm_virtual_network" "vnet" {
 }
 
 resource "azurerm_subnet" "subnet" {
+  #checkov:skip=CKV2_AZURE_31:NSGs are caller inputs (nsg_ids), attached by azurerm_subnet_network_security_group_association.
   for_each                                      = var.subnets
   name                                          = each.key
   resource_group_name                           = data.azurerm_resource_group.vnet.name
   virtual_network_name                          = azurerm_virtual_network.vnet.name
   address_prefixes                              = [each.value.address_prefix]
-  private_endpoint_network_policies             = try(each.value.private_endpoint_network_policies, "Disabled")
-  private_link_service_network_policies_enabled = try(each.value.private_link_service_network_policies_enabled, false)
+  private_endpoint_network_policies             = each.value.private_endpoint_network_policies
+  private_link_service_network_policies_enabled = each.value.private_link_service_network_policies_enabled
+  default_outbound_access_enabled               = each.value.default_outbound_access_enabled
 
   # azurerm 5.x replaced the service_endpoints list with service_endpoint blocks.
   # The input stays a list of service names, so callers do not change.
   dynamic "service_endpoint" {
-    for_each = try(each.value.subnet_service_endpoints, [])
+    for_each = each.value.subnet_service_endpoints
     content {
       service = service_endpoint.value
     }
   }
 
   dynamic "delegation" {
-    for_each = try(each.value.subnet_delegations, [])
+    for_each = each.value.subnet_delegations
     content {
       name = delegation.value
 
@@ -76,7 +78,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "default" {
 }
 
 module "diag" {
-  source                = "git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics?ref=v2.0.0"
+  source                = "git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics?ref=v3.0.0"
   diag_log_analytics_id = var.diag_log_analytics_id
   resource_id           = azurerm_virtual_network.vnet.id
   resource_type         = "vnet"

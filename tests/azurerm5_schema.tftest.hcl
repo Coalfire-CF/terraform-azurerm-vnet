@@ -9,6 +9,14 @@ mock_provider "azurerm" {
       location = "usgovvirginia"
     }
   }
+
+  mock_data "azurerm_monitor_diagnostic_categories" {
+    defaults = {
+      log_category_groups = ["allLogs"]
+      log_category_types  = ["VMProtectionAlerts"]
+      metrics             = ["AllMetrics"]
+    }
+  }
 }
 
 variables {
