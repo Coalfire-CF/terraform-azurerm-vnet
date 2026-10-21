@@ -23,210 +23,81 @@ Learn more at [Coalfire OpenSource](https://coalfire.com/opensource).
 
 | Resource | Description |
 |------|-------------|
-| Virtual Network | |
-| Subnet | Public /24 network |
-| Subnet | IAM /24 network |
-| Subnet | CICD /24 network |
-| Subnet | SecOps /24 network |
-| Subnet | SIEM /24 network |
-| Subnet | Monitor /24 network |
-| Subnet | Bastion /24 network |
-| Subnet | AzureFireWallSubnet /24 network |
-| Subnet | PrivateEndpoint /24 network |
-| Subnet | Postgresql /24 network |
+| Virtual network | One VNet with the given address space and DNS servers. |
+| Subnets | One subnet per entry in `subnets`, with service endpoints and delegations. |
+| NSG associations | One per entry in `nsg_ids`. The NSGs are caller inputs. |
+| Route table associations | One per entry in `route_tables_ids`. The route tables are caller inputs. |
+| Private DNS zone VNet links | One per entry in `core_private_dns_zone_ids` when `create_private_dns_zone` is true. The zones must already exist. |
+| Diagnostic settings | Sent to `diag_log_analytics_id` through `terraform-azurerm-diagnostics`. |
 
-## Code updates
+## Secure defaults
 
-- Change directory to the `mgmt-network` folder.
-- In the `mgmt.tf` file update the name and number of subnets as needed in the `subnet_addrs` module. Optionally add additional subnet blocks with the appropiate `subnet_service_endpoints` and `subnet_delegations`.
-- If you need to add or remove Service Endpoints, do so in the `subnet_service_endpoints` block. See <https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet> for Service Endpoint options.
-- For the initial deployment, ensure the `dns_servers` line is commented out until the Domain controllers are online. Once the DC's are online uncomment and rerun an `apply`.
+Each subnet in `subnets` gets these defaults. They follow Azure Verified Modules.
 
-`tstate.tf` Update to the appropriate version and storage accounts, see sample
+- `private_endpoint_network_policies = "Enabled"`. NSGs and route tables apply to private endpoints in the subnet. Set `Disabled` only when you accept that they do not.
+- `private_link_service_network_policies_enabled = true`. A subnet that hosts a Private Link Service must set this to `false`.
+- `default_outbound_access_enabled = false`. VMs get no implicit internet egress. A subnet that needs egress can set `true`, but prefer a NAT gateway or a firewall route.
 
-```hcl
-terraform {
-  required_version = ">= 1.16"
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 5.7"
-    }
-  }
-  backend "azurerm" {
-    resource_group_name  = "prod-mp-core-rg"
-    storage_account_name = "prodmpsatfstate"
-    container_name       = "tfstatecontainer"
-    environment          = "usgovernment"
-    key                  = "network.tfstate"
-  }
-}
-```
-
-## Deployment steps
-
-This module can be called as outlined below.
-
-- Change directories to the `mgmt/mgmt-network` directory.
-- From the `terraform/azure/mgmt/mgmt-network` directory run `terraform init`.
-- Run `terraform plan` to review the resources being created.
-- If everything looks correct in the plan output, run `terraform apply`.
+NSGs are caller inputs through `nsg_ids`. That is why the module skips checkov `CKV2_AZURE_31` on `azurerm_subnet`.
 
 ## Usage
 
+See [`examples/default`](examples/default) for a runnable root with a provider block.
+
 ```hcl
-provider "azurerm" {
-  features {}
-}
+module "vnet" {
+  source = "git::https://github.com/Coalfire-CF/terraform-azurerm-vnet?ref=v3.0.0"
 
-module "subnet_addrs" {
-  source          = "hashicorp/subnets/cidr"
-  base_cidr_block = var.mgmt_network_cidr
-  networks = [
-    {
-      name     = "${local.resource_prefix}-public-sn-1"
-      new_bits = 8
-    },
-    {
-      name     = "${local.resource_prefix}-iam-sn-1"
-      new_bits = 8
-    },
-    {
-      name     = "${local.resource_prefix}-cicd-sn-1"
-      new_bits = 8
-    },
-    {
-      name     = "${local.resource_prefix}-secops-sn-1"
-      new_bits = 8
-    },
-    {
-      name     = "${local.resource_prefix}-siem-sn-1"
-      new_bits = 8
-    },
-    {
-      name     = "${local.resource_prefix}-monitor-sn-1"
-      new_bits = 8
-    },
-    {
-      name     = "${local.resource_prefix}-bastion-sn-1"
-      new_bits = 8
-    },
-    {
-      name     = "AzureFirewallSubnet" #Per Azure docs, The Management Subnet used for the Firewall must have the name AzureFirewallManagementSubnet and the subnet mask must be at least a /26.
-      new_bits = 8
-    },
-    {
-      name     = "${local.resource_prefix}-pe-sn-1"
-      new_bits = 8
-    }
-    ,
-    {
-      name     = "${local.resource_prefix}-psql-sn-1"
-      new_bits = 8
-    }
-  ]
-}
+  vnet_name             = "example-vnet"
+  resource_group_name   = "example-network-rg"
+  address_space         = ["10.10.0.0/16"]
+  diag_log_analytics_id = var.diag_log_analytics_id
 
-module "mgmt-vnet" {
-  source              = "github.com/Coalfire-CF/ACE-Azure-Vnet?ref=module"
-  vnet_name           = "${local.resource_prefix}-network-vnet"
-  resource_group_name = data.terraform_remote_state.setup.outputs.network_rg_name
-  address_space       = [module.subnet_addrs.base_cidr_block]
   subnets = {
-    "${local.resource_prefix}-public-sn-1" = {
-      address_prefix           = module.subnet_addrs.network_cidr_blocks["${local.resource_prefix}-public-sn-1"]
+    "app-sn-1" = {
+      address_prefix           = "10.10.1.0/24"
       subnet_service_endpoints = ["Microsoft.KeyVault", "Microsoft.Storage"]
     }
-
-    "${local.resource_prefix}-iam-sn-1" = {
-      address_prefix           = module.subnet_addrs.network_cidr_blocks["${local.resource_prefix}-iam-sn-1"]
-      subnet_service_endpoints = ["Microsoft.KeyVault", "Microsoft.Storage"]
+    "pe-sn-1" = {
+      address_prefix = "10.10.2.0/24"
     }
-
-    "${local.resource_prefix}-cicd-sn-1" = {
-      address_prefix           = module.subnet_addrs.network_cidr_blocks["${local.resource_prefix}-cicd-sn-1"]
-      subnet_service_endpoints = ["Microsoft.KeyVault", "Microsoft.Storage", "Microsoft.ContainerRegistry"]
-    }
-
-    "${local.resource_prefix}-secops-sn-1" = {
-      address_prefix           = module.subnet_addrs.network_cidr_blocks["${local.resource_prefix}-secops-sn-1"]
-      subnet_service_endpoints = ["Microsoft.KeyVault", "Microsoft.Storage"]
-    }
-
-    "${local.resource_prefix}-siem-sn-1" = {
-      address_prefix           = module.subnet_addrs.network_cidr_blocks["${local.resource_prefix}-siem-sn-1"]
-      subnet_service_endpoints = ["Microsoft.KeyVault", "Microsoft.Storage"]
-    }
-
-    "${local.resource_prefix}-monitor-sn-1" = {
-      address_prefix           = module.subnet_addrs.network_cidr_blocks["${local.resource_prefix}-monitor-sn-1"]
-      subnet_service_endpoints = ["Microsoft.KeyVault", "Microsoft.Storage"]
-    }
-
-    "${local.resource_prefix}-bastion-sn-1" = {
-      address_prefix           = module.subnet_addrs.network_cidr_blocks["${local.resource_prefix}-bastion-sn-1"]
-      subnet_service_endpoints = ["Microsoft.KeyVault", "Microsoft.Storage"]
-
-      "AzureFirewallSubnet" = {
-        address_prefix           = module.subnet_addrs.network_cidr_blocks["AzureFirewallSubnet"]
-        subnet_service_endpoints = ["Microsoft.KeyVault", "Microsoft.Storage"]
-      }
-
-      "${local.resource_prefix}-pe-sn-1" = {
-        address_prefix                                 = module.subnet_addrs.network_cidr_blocks["${local.resource_prefix}-pe-sn-1"]
-        subnet_service_endpoints                       = ["Microsoft.KeyVault", "Microsoft.Storage", "Microsoft.Sql", "Microsoft.ContainerRegistry"]
-        enforce_private_link_endpoint_network_policies = true
-      }
-
-      "${local.resource_prefix}-psql-sn-1" = {
-        address_prefix           = module.subnet_addrs.network_cidr_blocks["${local.resource_prefix}-psql-sn-1"]
-        subnet_service_endpoints = ["Microsoft.KeyVault", "Microsoft.Storage", "Microsoft.Sql"]
-        subnet_delegations = ["Microsoft.DBforPostgreSQL/flexibleServers"]
-        enforce_private_link_endpoint_network_policies = true
-      }
+    "psql-sn-1" = {
+      address_prefix     = "10.10.3.0/24"
+      subnet_delegations = ["Microsoft.DBforPostgreSQL/flexibleServers"]
     }
   }
 
-  #Log Analytics
-  diag_log_analytics_id = data.terraform_remote_state.core.outputs.core_la_id
-  #Attach Vnet to Private DNS zone
-  private_dns_zone_id = data.terraform_remote_state.core.outputs.core_map_private_dns_zone_ids #Value is an input of a Map of Private DNS zone names to their resource IDs
+  nsg_ids = {
+    "app-sn-1" = var.app_nsg_id
+  }
 
-  #Note: DNS servers should be left to Azure default until the DC's are up. Otherwise the VM's will fail to get DNS to download scripts from storage accounts.
-  #dns_servers   = concat(data.terraform_remote_state.usgv-ad.outputs.ad_dc1_ip, data.terraform_remote_state.usgv-ad.outputs.ad_dc2_ip)
-  #regional_tags = var.regional_tags
-  #global_tags   = merge(var.global_tags, local.global_local_tags)
+  core_private_dns_zone_ids = var.core_private_dns_zone_ids
+
   tags = {
     Function = "Networking"
-    Plane    = "Management"
   }
 }
-
 ```
-
-## Next steps
-
-Application VNet (terraform/prod/{region}/mgmt/mgmt-network)
 
 <!-- markdownlint-disable MD033 MD034 MD060 -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.16 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 5.7 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.16.6, < 2.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 5.10 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 5.7 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 5.10 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_diag"></a> [diag](#module\_diag) | git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics | v2.0.0 |
+| <a name="module_diag"></a> [diag](#module\_diag) | git::https://github.com/Coalfire-CF/terraform-azurerm-diagnostics | v3.0.0 |
 
 ## Resources
 
@@ -245,16 +116,15 @@ Application VNet (terraform/prod/{region}/mgmt/mgmt-network)
 |------|-------------|------|---------|:--------:|
 | <a name="input_address_space"></a> [address\_space](#input\_address\_space) | The address space that is used by the virtual network. | `list(string)` | <pre>[<br/>  "10.0.0.0/16"<br/>]</pre> | no |
 | <a name="input_core_private_dns_zone_ids"></a> [core\_private\_dns\_zone\_ids](#input\_core\_private\_dns\_zone\_ids) | Map of core Azure Private DNS zone names to their resource IDs. | `map(string)` | `{}` | no |
-| <a name="input_create_private_dns_zone"></a> [create\_private\_dns\_zone](#input\_create\_private\_dns\_zone) | Boolean to control whether to create Private DNS Zone link. Depends on Private DNS Zones already existing. | `bool` | `true` | no |
+| <a name="input_create_private_dns_zone"></a> [create\_private\_dns\_zone](#input\_create\_private\_dns\_zone) | When true, link the VNet to every zone in core\_private\_dns\_zone\_ids. The zones must already exist. | `bool` | `true` | no |
 | <a name="input_diag_log_analytics_id"></a> [diag\_log\_analytics\_id](#input\_diag\_log\_analytics\_id) | ID of the Log Analytics Workspace diagnostic logs should be sent to | `string` | n/a | yes |
 | <a name="input_dns_servers"></a> [dns\_servers](#input\_dns\_servers) | The DNS servers to be used with VNet. | `list(string)` | `[]` | no |
 | <a name="input_global_tags"></a> [global\_tags](#input\_global\_tags) | Global level tags | `map(string)` | `{}` | no |
 | <a name="input_nsg_ids"></a> [nsg\_ids](#input\_nsg\_ids) | A map of subnet name to Network Security Group IDs | `map(string)` | `{}` | no |
-| <a name="input_private_dns_zone_id"></a> [private\_dns\_zone\_id](#input\_private\_dns\_zone\_id) | The ID of the Private DNS Zone. | `string` | `null` | no |
 | <a name="input_regional_tags"></a> [regional\_tags](#input\_regional\_tags) | Regional level tags | `map(string)` | `{}` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the resource group to be imported. | `string` | n/a | yes |
 | <a name="input_route_tables_ids"></a> [route\_tables\_ids](#input\_route\_tables\_ids) | A map of subnet name to Route table ids | `map(string)` | `{}` | no |
-| <a name="input_subnets"></a> [subnets](#input\_subnets) | Map of maps with Subnet names and their configuration | `any` | n/a | yes |
+| <a name="input_subnets"></a> [subnets](#input\_subnets) | Map of subnet name to settings. Defaults follow Azure Verified Modules: network policies apply to private endpoints, private link service policies stay on, and default outbound internet access is off. Turning default\_outbound\_access\_enabled on gives VMs in the subnet implicit internet egress through an Azure-owned IP. Setting private\_endpoint\_network\_policies to Disabled means NSGs and route tables do not apply to private endpoints in the subnet. A subnet that hosts a Private Link Service must set private\_link\_service\_network\_policies\_enabled to false. | <pre>map(object({<br/>    address_prefix                                = string<br/>    subnet_service_endpoints                      = optional(list(string), [])<br/>    subnet_delegations                            = optional(list(string), [])<br/>    private_endpoint_network_policies             = optional(string, "Enabled")<br/>    private_link_service_network_policies_enabled = optional(bool, true)<br/>    default_outbound_access_enabled               = optional(bool, false)<br/>  }))</pre> | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | The tags to associate with your network and subnets. | `map(string)` | n/a | yes |
 | <a name="input_vnet_name"></a> [vnet\_name](#input\_vnet\_name) | Name of the vnet to create | `string` | `"acctvnet"` | no |
 
