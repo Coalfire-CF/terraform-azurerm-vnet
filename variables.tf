@@ -96,3 +96,66 @@ variable "diag_log_analytics_id" {
   description = "ID of the Log Analytics Workspace diagnostic logs should be sent to"
   type        = string
 }
+
+variable "flow_log" {
+  description = "Turns on a VNet flow log with traffic analytics when set. Default null (off). Needs an existing Network Watcher in the VNet region, a Standard GPv2 storage account in the VNet region, and a Log Analytics workspace. log_analytics_workspace_id is the workspace GUID (customer ID), not its resource ID. name defaults to <vnet_name>-flowlog."
+  type = object({
+    network_watcher_name                = string
+    network_watcher_resource_group_name = string
+    storage_account_id                  = string
+    log_analytics_workspace_id          = string
+    log_analytics_workspace_resource_id = string
+    log_analytics_workspace_region      = string
+    name                                = optional(string)
+  })
+  default = null
+
+  validation {
+    condition     = var.flow_log == null ? true : length(trimspace(var.flow_log.network_watcher_name)) > 0 && length(trimspace(var.flow_log.network_watcher_resource_group_name)) > 0 && length(trimspace(var.flow_log.log_analytics_workspace_region)) > 0
+    error_message = "flow_log.network_watcher_name, network_watcher_resource_group_name and log_analytics_workspace_region must not be empty."
+  }
+
+  validation {
+    condition     = var.flow_log == null ? true : can(regex("(?i)^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft.Storage/storageAccounts/[^/]+$", var.flow_log.storage_account_id))
+    error_message = "flow_log.storage_account_id must be a storage account resource ID."
+  }
+
+  validation {
+    condition     = var.flow_log == null ? true : can(regex("(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", var.flow_log.log_analytics_workspace_id))
+    error_message = "flow_log.log_analytics_workspace_id must be the workspace GUID, not its resource ID."
+  }
+
+  validation {
+    condition     = var.flow_log == null ? true : can(regex("(?i)^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft.OperationalInsights/workspaces/[^/]+$", var.flow_log.log_analytics_workspace_resource_id))
+    error_message = "flow_log.log_analytics_workspace_resource_id must be a Log Analytics workspace resource ID."
+  }
+
+  validation {
+    condition     = var.flow_log == null ? true : (var.flow_log.name == null ? true : can(regex("^[^\\W_]$|^[^\\W_][\\w.\\-]{0,78}[\\w]$", var.flow_log.name)))
+    error_message = "flow_log.name must be 1 to 80 characters, start with a letter or digit, end with a word character, and use only word characters, '.', '-' or '_'."
+  }
+}
+
+variable "flow_log_retention_days" {
+  description = "Days to keep flow log records in the storage account when flow_log is set. 0 keeps them indefinitely. Otherwise at least 90."
+  type        = number
+  default     = 90
+  nullable    = false
+
+  validation {
+    condition     = floor(var.flow_log_retention_days) == var.flow_log_retention_days && (var.flow_log_retention_days == 0 || var.flow_log_retention_days >= 90)
+    error_message = "flow_log_retention_days must be a whole number: 0 (keep indefinitely) or at least 90."
+  }
+}
+
+variable "flow_log_traffic_analytics_interval_in_minutes" {
+  description = "Traffic analytics processing interval in minutes when flow_log is set. 10 or 60."
+  type        = number
+  default     = 60
+  nullable    = false
+
+  validation {
+    condition     = contains([10, 60], var.flow_log_traffic_analytics_interval_in_minutes)
+    error_message = "flow_log_traffic_analytics_interval_in_minutes must be 10 or 60."
+  }
+}

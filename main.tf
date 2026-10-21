@@ -83,3 +83,32 @@ module "diag" {
   resource_id           = azurerm_virtual_network.vnet.id
   resource_type         = "vnet"
 }
+
+# VNet flow log with traffic analytics. Off unless flow_log is set (D2: needs a
+# caller-supplied Network Watcher, storage account and workspace). Azure no
+# longer allows new NSG flow logs.
+resource "azurerm_network_watcher_flow_log" "vnet" {
+  count = var.flow_log == null ? 0 : 1
+
+  name                 = coalesce(var.flow_log.name, "${azurerm_virtual_network.vnet.name}-flowlog")
+  network_watcher_name = var.flow_log.network_watcher_name
+  resource_group_name  = var.flow_log.network_watcher_resource_group_name
+  target_resource_id   = azurerm_virtual_network.vnet.id
+  storage_account_id   = var.flow_log.storage_account_id
+  enabled              = true
+  version              = 2
+  tags                 = local.tags
+
+  retention_policy {
+    enabled = true
+    days    = var.flow_log_retention_days
+  }
+
+  traffic_analytics {
+    enabled               = true
+    workspace_id          = var.flow_log.log_analytics_workspace_id
+    workspace_region      = var.flow_log.log_analytics_workspace_region
+    workspace_resource_id = var.flow_log.log_analytics_workspace_resource_id
+    interval_in_minutes   = var.flow_log_traffic_analytics_interval_in_minutes
+  }
+}

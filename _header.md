@@ -27,6 +27,7 @@ Learn more at [Coalfire OpenSource](https://coalfire.com/opensource).
 | Route table associations | One per entry in `route_tables_ids`. The route tables are caller inputs. |
 | Private DNS zone VNet links | One per entry in `core_private_dns_zone_ids` when `create_private_dns_zone` is true. The zones must already exist. |
 | Diagnostic settings | Sent to `diag_log_analytics_id` through `terraform-azurerm-diagnostics`. |
+| VNet flow log | One flow log with traffic analytics on the VNet when `flow_log` is set. Off by default. |
 
 ## Secure defaults
 
@@ -37,6 +38,23 @@ Each subnet in `subnets` gets these defaults. They follow Azure Verified Modules
 - `default_outbound_access_enabled = false`. VMs get no implicit internet egress. A subnet that needs egress can set `true`, but prefer a NAT gateway or a firewall route.
 
 NSGs are caller inputs through `nsg_ids`. That is why the module skips checkov `CKV2_AZURE_31` on `azurerm_subnet`.
+
+## VNet flow logs
+
+Flow logs are off by default. Set `flow_log` to turn them on. Azure no longer allows new NSG flow logs, so this replaces them.
+
+Turning it on needs:
+
+- An existing Network Watcher in the VNet's region and in the provider's subscription. Azure creates `NetworkWatcher_<region>` in `NetworkWatcherRG` by default.
+- A Standard GPv2 storage account in the VNet's region.
+- A Log Analytics workspace.
+- The `Microsoft.Insights` resource provider registered in the subscription.
+
+`log_analytics_workspace_id` is the workspace GUID (the `workspace_id` attribute of `azurerm_log_analytics_workspace`), not its resource ID.
+
+Records are kept for 90 days by default. Set `flow_log_retention_days` to change it: 0 keeps them forever, otherwise the value must be at least 90. Traffic analytics runs every 60 minutes by default. Set `flow_log_traffic_analytics_interval_in_minutes` to 10 or 60. The module writes flow log format version 2.
+
+The provider creates a lifecycle management rule on the storage account that overwrites any existing rules. Use a storage account with no other lifecycle rules.
 
 ## Usage
 
