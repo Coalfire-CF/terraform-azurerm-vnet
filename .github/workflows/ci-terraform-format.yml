@@ -24,6 +24,6 @@ on:
 
 jobs:
   terraform-docs:
-    uses: Coalfire-CF/Actions/.github/workflows/ci-terraform-format.yml@41c5b9cccbfd5cf474ec38d53676d6f4ec213258 # v1.6.0
+    uses: Coalfire-CF/Actions/.github/workflows/ci-terraform-format.yml@ff2ce86f31c3ca42c0dcefbd4d3e53a68f99759c # v1.7.0
     with:
       terraform_version: "1.16.6"
